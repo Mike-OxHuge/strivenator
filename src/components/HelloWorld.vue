@@ -1,138 +1,130 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa"
-          target="_blank"
-          rel="noopener"
-          >pwa</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router"
-          target="_blank"
-          rel="noopener"
-          >router</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex"
-          target="_blank"
-          rel="noopener"
-          >vuex</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
-  </div>
+  <v-container>
+    <div class="text-center">
+      <h2>Exam checker.</h2>
+    </div>
+    <v-container fluid v-if="!isFetched">
+      <v-form v-model="valid">
+        <v-row justify="center">
+          <v-col cols="12" md="6" class="mx-auto">
+            <v-text-field
+              outlined
+              label="Exam ID"
+              placeholder="Exam ID"
+              hint="It can be found at the end of the URL on the page after finishing an exam."
+              v-model="examId"
+              :counter="1000"
+              :rules="examRules"
+              required
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="12" md="6" class="mx-auto">
+            <v-text-field
+              outlined
+              label="Access token"
+              v-model="accessToken"
+              :rules="accessTokenRules"
+              :counter="1000"
+              required
+              placeholder="Access token"
+              hint="See the user manual for details"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row justify="center">
+          <v-col cols="6" class="mx-auto text-center">
+            <v-btn
+              @click="handleSubmit()"
+              :disabled="!valid"
+              :loading="isLoading"
+              color="primary"
+              outlined
+            >
+              <span class="font-weight-black px-1">Fetch</span>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-container>
+    <Questions v-else :questions="exam" />
+    <v-alert v-if="error" type="error"
+      >An error has occured. Please make sure you inserted correct data and try
+      again.</v-alert
+    >
+  </v-container>
 </template>
 
 <script>
+import Questions from "./Questions.vue";
+
 export default {
+  components: { Questions },
+  mounted: function () {
+    //
+  },
   name: "HelloWorld",
-  props: {
-    msg: String,
+
+  // data: () => ({
+  //   // just another way to have state
+  // }),
+  data() {
+    return {
+      error: false,
+      isFetched: false,
+      exam: [],
+      topics: [],
+      position: null,
+      total: null,
+      batch: "",
+      module: "",
+      valid: false,
+      accessToken: "",
+      accessTokenRules: [
+        (v) => !!v || "Access token is required",
+        (v) =>
+          v.length <= 1000 || "Access token can't be more than 1000 characters",
+      ],
+      examId: "",
+      examRules: [
+        (v) => !!v || "ExamID is required",
+        (v) => v.length <= 1000 || "ExamID can't be more than 1000 characters",
+      ],
+      isLoading: false,
+    };
+  },
+  methods: {
+    async handleSubmit() {
+      this.isLoading = true;
+      try {
+        const getTheExam = await fetch(
+          `https://striveschool-benchmark-be.herokuapp.com/exams/position/${this.examId}`,
+          {
+            method: "GET",
+            headers: {
+              authorization: "Bearer " + this.accessToken,
+            },
+          }
+        );
+        if (getTheExam.ok) {
+          const examResults = await getTheExam.json();
+          this.isLoading = false;
+          this.isFetched = true;
+          this.exam = examResults.exam.questions;
+          this.topics = examResults.exam.topics;
+          this.position = examResults.position;
+          this.total = examResults.total;
+          this.batch = examResults.exam.batch;
+          this.module = examResults.exam.module;
+        } else {
+          this.error = true;
+          this.isLoading = false;
+        }
+      } catch (error) {
+        console.log(error);
+        this.isLoading = false;
+      }
+    },
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
