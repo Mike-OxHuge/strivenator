@@ -7,7 +7,9 @@
         md="6"
         v-for="question in questions"
         :key="question._id"
-        >{{ question.text }}
+        class="whole-box"
+      >
+        <h4 class="mb-5">{{ question.text }}</h4>
         <v-row>
           <v-col
             v-for="answer in question.answers"
@@ -17,6 +19,7 @@
               'green--text': answer.isCorrect,
               'red--text': !answer.isCorrect,
             }"
+            class="answer-box"
           >
             {{ answer.text }}
           </v-col>
@@ -37,4 +40,10 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.whole-box {
+  border: 1px grey solid;
+}
+.answer-box {
+}
+</style>
