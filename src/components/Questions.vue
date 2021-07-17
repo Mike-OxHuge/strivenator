@@ -10,27 +10,22 @@
         class="whole-box"
       >
         <h4 class="mb-5">{{ question.text }}</h4>
-        <v-row>
-          <v-col
-            v-for="answer in question.answers"
-            :key="answer._id"
-            cols="6"
-            :class="{
-              'green--text': answer.isCorrect,
-              'red--text': !answer.isCorrect,
-            }"
-            class="answer-box"
-          >
-            {{ answer.text }}
-          </v-col>
-        </v-row>
+        <v-img v-if="question.img" :src="question.img"></v-img>
+        <Answers
+          :providedAnswers="question.providedAnswer"
+          :answers="question.answers"
+        />
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
+import Answers from "./Answers.vue";
 export default {
+  components: {
+    Answers,
+  },
   props: {
     questions: {
       type: Array,
@@ -43,7 +38,5 @@ export default {
 <style scoped>
 .whole-box {
   border: 1px grey solid;
-}
-.answer-box {
 }
 </style>
