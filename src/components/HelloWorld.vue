@@ -1,7 +1,16 @@
 <template>
   <v-container>
     <div class="text-center">
-      <h2>Exam checker.</h2>
+      <h2 v-if="!isFetched">Exam checker.</h2>
+      <div v-else>
+        <h2>Your position (so far) is {{ position }} out of {{ total }}</h2>
+        <h3>Your batch: {{ batch }}</h3>
+        <h4>The module: {{ module }}</h4>
+        <h3>Topics of this exam:</h3>
+        <ul>
+          <li v-for="topic in topics" :key="topic.i">{{ topic }}</li>
+        </ul>
+      </div>
     </div>
     <v-container fluid v-if="!isFetched">
       <v-form v-model="valid">
