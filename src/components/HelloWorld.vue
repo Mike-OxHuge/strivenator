@@ -107,7 +107,7 @@ export default {
       this.isLoading = true;
       try {
         const getTheExam = await fetch(
-          `https://striveschool-benchmark-be.herokuapp.com/exams/position/${this.examId}`,
+          `https://striveschool-benchmark-be.herokuapp.com/exams/${this.examId}`,
           {
             method: "GET",
             headers: {
@@ -119,12 +119,15 @@ export default {
           const examResults = await getTheExam.json();
           this.isLoading = false;
           this.isFetched = true;
-          this.exam = examResults.exam.questions;
-          this.topics = examResults.exam.topics;
+          this.exam = examResults.questions;
+          this.topics = examResults.topics;
           this.position = examResults.position;
           this.total = examResults.total;
-          this.batch = examResults.exam.batch;
-          this.module = examResults.exam.module;
+          this.batch = examResults.batch;
+          this.module = examResults.module;
+          alert(
+            "I am sorry, but Strive decided to remove isCorrect property and so every answer is marked as incorrect. Thanks, I guess."
+          );
         } else {
           this.error = true;
           this.isLoading = false;
